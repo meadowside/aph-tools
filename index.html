@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explainer Video Prompt Builder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  /* layout: form on the left, live prompt pinned on the right; one column on phones */
+  --bg:#EDF0F3; --panel:#FFFFFF; --ink:#141B2D; --muted:#5A6478; --line:#CBD2DC;
+  --accent:#2346E0; --accent-ink:#FFFFFF; --mark:#FFD23F; --mark-ink:#141B2D; --well:#F4F6F9;
+  --display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1422; --panel:#182036; --ink:#EEF1F7; --muted:#9AA5BC; --line:#313C58;
+    --accent:#7C93FF; --accent-ink:#0F1422; --mark:#FFD23F; --mark-ink:#141B2D; --well:#121A2C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1422; --panel:#182036; --ink:#EEF1F7; --muted:#9AA5BC; --line:#313C58;
+  --accent:#7C93FF; --accent-ink:#0F1422; --mark:#FFD23F; --mark-ink:#141B2D; --well:#121A2C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--body)}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 48px;display:flex;flex-direction:column;gap:24px}
+header{display:flex;flex-direction:column;gap:6px}
+.brand{font:500 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 clamp(30px,5vw,46px)/1.05 var(--display);margin:0;text-wrap:balance}
+h1 mark{background:var(--mark);color:var(--mark-ink);padding:0 .15em;border-radius:6px}
+.lede{margin:0;color:var(--muted);max-width:62ch}
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+.form{display:flex;flex-direction:column;gap:16px}
+fieldset{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:18px;margin:0;display:flex;flex-direction:column;gap:12px;min-width:0}
+legend{font:600 18px var(--display);padding:0 8px;display:flex;align-items:center;gap:8px}
+legend .n{font:500 12px var(--mono);background:var(--ink);color:var(--panel);border-radius:999px;padding:2px 8px}
+.hint{color:var(--muted);font-size:14px;margin:0}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{border:2px solid var(--line);border-radius:12px;background:var(--well);padding:0;cursor:pointer;text-align:left;color:inherit;font:inherit;overflow:hidden;display:flex;flex-direction:column}
+.card canvas{display:block;width:100%;height:auto;aspect-ratio:16/9}
+.card .meta{padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.card b{font:600 16px var(--display)}
+.card span{font-size:13px;color:var(--muted)}
+.card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+textarea,input[type=number]{font:inherit;color:inherit;background:var(--well);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:96px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.between{justify-content:space-between}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:500 14px var(--body);cursor:pointer;text-decoration:underline}
+.count{font:400 13px var(--mono);color:var(--muted)}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent);flex:none}
+.check small{display:block;color:var(--muted);font-size:14px}
+.len{display:flex;gap:8px;align-items:center}
+.len input{width:76px;text-align:center;font-variant-numeric:tabular-nums}
+.chip{font:500 14px var(--mono);border:1px solid var(--line);background:var(--well);color:inherit;border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.frames{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.frame{border:2px solid var(--line);border-radius:12px;background:var(--well);padding:12px;cursor:pointer;color:inherit;font:inherit;display:flex;gap:12px;align-items:center;text-align:left}
+.frame[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.frame i{display:block;border:2px solid var(--ink);border-radius:4px;flex:none}
+.frame b{display:block;font:600 16px var(--display)}
+.frame span{font:400 13px var(--mono);color:var(--muted)}
+.dests{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.dest{border:2px solid var(--line);border-radius:12px;background:var(--well);padding:10px 12px;cursor:pointer;color:inherit;font:inherit;text-align:left;display:flex;flex-direction:column;gap:2px}
+.dest b{font:600 15px var(--display)}
+.dest span{font:400 12px var(--mono);color:var(--muted)}
+.dest[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.adjust{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.adjust input[type=range]{flex:1 1 200px;accent-color:var(--accent);min-width:160px}
+.lenlab{font-weight:500;display:flex;gap:8px;align-items:baseline}
+.lenlab output{font:500 15px var(--mono);font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--well);align-self:flex-start}
+.seg button{border:0;background:none;color:inherit;font:500 15px var(--body);padding:9px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+input[type=text]{font:inherit;color:inherit;background:var(--well);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.sub{display:inline-block;background:var(--mark);color:var(--mark-ink);font:600 15px var(--display);text-decoration:none;border-radius:10px;padding:9px 14px;align-self:flex-start}
+.cta{border:2px solid var(--mark);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.cta b{font:600 17px var(--display)}
+.cta span{font-size:14px;color:var(--muted)}
+.off{opacity:.45;pointer-events:none}
+.out{position:sticky;top:16px;border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.out h2{font:600 20px var(--display);margin:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font:500 12px var(--mono);border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--well)}
+.copy{font:800 20px var(--display);background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:14px 18px;cursor:pointer}
+.copy:disabled{opacity:.45;cursor:default}
+.copy.done{background:var(--mark);color:var(--mark-ink)}
+.steps{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
+.steps a{color:var(--accent)}
+pre{margin:0;font:400 12.5px/1.55 var(--mono);background:var(--well);border:1px solid var(--line);border-radius:10px;padding:12px;max-height:420px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg{font-size:14px;min-height:20px;color:var(--muted);margin:0}
+:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+footer{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row between"><div class="brand">AI Prompt Hackers</div><a class="sub" href="https://aiprompthackers.com/" target="_blank" rel="noopener">Subscribe free</a></div>
+    <h1>Explainer Video <mark>Prompt Builder</mark></h1>
+    <p class="lede">Pick a look, describe your topic and copy the prompt. Paste it into a new Claude chat and Claude builds an animated explainer with an MP4 you can download.</p>
+  </header>
+
+  <div class="cols">
+    <form class="form" id="form" autocomplete="off">
+      <fieldset>
+        <legend>What's the video about?</legend>
+        <textarea id="topic" maxlength="500" aria-label="Video topic"></textarea>
+        <div class="row between">
+          <button type="button" class="linkbtn" id="sample">Try an example topic</button>
+          <span class="count" id="count">0 / 500</span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Who's watching?</legend>
+        <input type="text" id="audience" maxlength="120" aria-label="Audience" placeholder="Optional. For example: small business owners who are new to AI">
+        <p class="hint">Claude pitches the words, examples and pace at them.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Where will it go?</legend>
+        <div class="dests" id="dests"></div>
+        <div class="adjust">
+          <label for="len" class="lenlab">Length <output id="lenout" for="len">1:30</output></label>
+          <input type="range" id="len" min="15" max="120" step="5" value="90">
+          <div class="seg" id="frameSeg" role="group" aria-label="Frame shape" hidden>
+            <button type="button" id="wide">Wide 16:9</button><button type="button" id="tall">Tall 9:16</button>
+          </div>
+        </div>
+        <p class="hint" id="lenhint"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Pick a look</legend>
+        <div class="cards" id="cards"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Review before Claude builds?</legend>
+        <div class="seg" role="group" aria-label="Review first">
+          <button type="button" id="planYes">Show me the plan first</button><button type="button" id="planNo">Build it straight away</button>
+        </div>
+        <p class="hint" id="planhint"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sound</legend>
+        <div class="seg" role="group" aria-label="Narration">
+          <button type="button" id="voiceNo">No voice</button><button type="button" id="voiceYes">My own voiceover</button>
+        </div>
+        <textarea id="script" maxlength="4000" aria-label="Voiceover script" placeholder="Optional: paste your voiceover script so Claude can time the scenes to it." hidden></textarea>
+        <label class="check" for="music"><input type="checkbox" id="music" checked><span>Background music<small>An original backing track, composed in the browser.</small></span></label>
+        <label class="check" for="effects"><input type="checkbox" id="effects" checked><span>Sound effects<small>Quiet sounds on the moments that matter.</small></span></label>
+        <p class="hint">Every video comes with play, pause, restart, a scrub bar and MP4 export at 30 fps.</p>
+      </fieldset>
+    </form>
+
+    <aside class="out" aria-live="polite">
+      <h2>Your prompt</h2>
+      <button type="button" class="copy" id="copy">Copy prompt</button>
+      <p class="msg" id="msg"></p>
+      <ol class="steps">
+        <li>Copy the prompt.</li>
+        <li><a href="https://claude.ai/new" target="_blank" rel="noopener">Open a new Claude chat</a> and paste it.</li>
+        <li>Play the video, then press Export MP4.</li>
+      </ol>
+      <div class="cta"><b>Want more tools like this?</b><span>AI Prompt Hackers shares prompts, skills and builders that get more out of AI.</span>
+        <a class="sub" href="https://aiprompthackers.com/" target="_blank" rel="noopener">Subscribe to AI Prompt Hackers</a></div>
+      <pre id="preview" tabindex="0" aria-label="Prompt preview"></pre>
+    </aside>
+  </div>
+  <footer>Free to use. Made by AI Prompt Hackers. The prompt is yours to edit before you paste it.</footer>
+</div>
+
+<script>
+/*LOGIC-START*/
+const STYLES=[
+ {id:'paper',name:'Paper Cut',tag:'Layered paper shapes with soft shadows',sample:'How a credit card payment gets approved in two seconds',
+  block:'Everything is made of cut paper. Build each object from flat layered shapes with slightly uneven edges and a soft drop shadow under every layer, so the pieces look stacked on a table. Use a warm off-white background (#F4EDE1) and a small set of matte colours: brick red (#C8553D), mustard (#E0A526), teal (#2F7F86) and charcoal (#2B2B2B) for text. Pieces slide in from the edges, fold open, flip over and stack. Nothing glows and nothing is see-through. Lettering is a chunky rounded sans-serif that looks cut from card.'},
+ {id:'chalk',name:'Chalk Talk',tag:'Hand-drawn chalk on a dark board',sample:'Why compound interest starts slow and then snowballs',
+  block:'The whole video is drawn in chalk on a dark board (#1F2A28). Lines are slightly rough and uneven in thickness, like a real hand drew them, and they appear by being drawn from one end to the other. Use white chalk for most things, with yellow (#F2D469), pink (#EF8FA0) and sky blue (#8EC9E8) to pick out the part that matters right now. Leave faint smudges where something was rubbed out. Diagrams, arrows and labels build up on the board like a teacher explaining live, and old parts get wiped to make room. Lettering looks handwritten but stays easy to read.'},
+ {id:'flat',name:'Bold Flat',tag:'Big shapes, heavy type, strong colour',sample:'What an API is and why every app uses them',
+  block:'A clean, confident flat look. Use big simple shapes with no outlines, no gradients and no shadows. Pick one strong background colour per scene from this set: deep navy (#14213D), hot coral (#FF5A5F), sunflower (#FFC914) and off-white (#FAF7F0). Objects are built from circles, rectangles and rounded bars. Type is very large, heavy and tight, and it often takes up a third of the frame. Movement is snappy: shapes grow, split, slide and swap colours on a clear beat. Scene changes happen by one shape expanding to fill the frame and becoming the next background.'},
+ {id:'neon',name:'Neon Grid',tag:'Glowing outlines on a night-time grid',sample:'How a video travels from a server to your phone',
+  block:'A night-time synthwave look. The background is near-black (#0B0B1A) with a faint perspective grid running to a horizon. Draw everything as glowing outlines in hot magenta (#FF2E88), electric cyan (#19E3FF) and violet (#8A5CFF), with a soft glow around each line and almost no filled shapes. Lines switch on like neon tubes: a quick flicker, then steady. Pulses of light travel along the lines to show flow. Lettering is a wide, clean sans-serif in capitals with the same glow. Keep the glow tight so small text stays sharp.'},
+ {id:'glass',name:'Glass Lab',tag:'Frosted glass panels over drifting colour',sample:'What our new app does, in under a minute',
+  block:'A soft, modern product-launch look. The background is a slow-moving blend of deep indigo (#1B1F4B), violet (#6C4CF1) and peach (#FFB199) colour fields. Objects are frosted glass panels: rounded rectangles filled with white at low opacity, with a thin bright edge and a soft shadow underneath, stacked at different depths. Icons and diagrams are thin white lines on the glass. Panels float, tilt slightly and slide over each other while the colours drift behind them. Lettering is a light, crisp sans-serif in white. Put text on the darkest part of the background or on a darker panel so it stays readable.'},
+ {id:'ink',name:'Ink Wash',tag:'Black brush strokes and one red accent',sample:'Why new habits take weeks to stick',
+  block:'Black ink on rice paper. The background is a warm paper tone (#F3ECDD) with faint fibres. Draw objects as loose brush strokes in black (#1A1A1A) that run from thick to thin and break up into dry edges at the end of each stroke. Strokes are painted on from start to finish, and washes of grey ink spread outward like water soaking in. Use one accent only, a seal red (#C3272B), for the single thing that matters most in each scene. Leave plenty of empty paper. Lettering is a calm serif in black, with key words stamped in the red.'},
+ {id:'comic',name:'Comic Pop',tag:'Thick outlines, halftone dots, speech bubbles',sample:'How vaccines train your immune system',
+  block:'A loud comic-book look. Flat primary colours: red (#E63946), yellow (#FFD60A), blue (#1D4ED8), white and black. Every shape has a thick black outline and a hard offset shadow, and large areas are filled with halftone dots. Scenes sit in comic panels that slide, snap and tilt into place, and big moments get a starburst with a short sound word. Explanations appear in speech bubbles and caption boxes. Lettering is heavy italic capitals. Movement is fast with a small overshoot, like a punch landing.'},
+ {id:'term',name:'Terminal',tag:'Green text on an old computer screen',sample:'How a website checks your password without storing it',
+  block:'An old computer terminal. The screen is near-black (#07110B) with faint scanlines and a slight glow. Everything is built from monospaced text characters in phosphor green (#39FF7A), with amber (#FFB000) for the part that matters right now: boxes drawn with line characters, arrows made of dashes, bar charts made of blocks. Text types on one character at a time behind a blinking block cursor, and diagrams draw themselves line by line like program output. Scene changes clear the screen from top to bottom. Lettering is one monospaced font throughout, with capitals for headlines.'},
+ {id:'clay',name:'Clay Motion',tag:'Chunky hand-moulded shapes in pastel',sample:'How bees turn nectar into honey',
+  block:'A soft stop-motion clay look. Objects are chunky rounded shapes that look moulded by hand: slightly lumpy outlines, a light side and a shaded side on every shape and a soft shadow on the ground beneath. Use a pastel set on a pale background (#F6F1EA): coral (#FF8A7A), mint (#7ED9B6), sky (#7FB8F5), butter (#FFD97A) and plum (#5B4B6E) for text. Things squash a little when they land and stretch when they move, and motion steps at about twelve poses a second like real stop-motion. Shapes roll, press together and split apart to show ideas. Lettering is a rounded, friendly sans-serif that looks pressed into the clay.'}
+];
+const CORE=[
+"You're making a short animated explainer video for me, built as an HTML artifact in this chat.",
+"THE BRIEF\nTopic: {{TOPIC}}{{EXTRA}}\nLength: {{LENGTH}}\nFrame: {{WIDTH}} x {{HEIGHT}} pixels ({{SHAPE}})\nLook: {{STYLE_NAME}}\nSound: {{SOUND_SUMMARY}}\nI want: a video I can play here, plus an MP4 file at 30 frames per second that I can download.",
+"WHAT A GOOD ONE DOES\nSomeone who knows nothing about the topic should be able to explain it to a friend after one viewing. Work out the four to six ideas they need and the order they need them in. Give each idea a picture that moves. Show the thing happening. On-screen text backs up the picture and stays short enough to read in two seconds.\n\nStart with something happening in the first three seconds. No title card. Finish on one image that sums up the whole idea.\n\nOnly state facts you're sure of. If you use example numbers, label them as examples.",
+"THE LOOK\n{{STYLE_BLOCK}}",
+"HOW IT MOVES\nTreat the video as one continuous shot. Each scene should hand over to the next through something they share: an object that travels, a shape that changes, or a camera move. Something on screen should change every two or three seconds. Ease every movement in and out. Nothing pops into place and nothing sits frozen.",
+"WHERE THINGS GO\nKeep one strip of the frame for captions and use the same strip in every scene. The action gets the rest. Captions and action never share space. Each caption is a short headline plus one plain sentence.",
+"HOW TO BUILD IT\n- One self-contained HTML file.\n- Draw everything on a single canvas at the frame size above, text included. If it's visible in the video, it's on that canvas.\n- Write one function that takes a time in seconds and draws exactly that frame. Playback, scrubbing and export all call it. Don't carry state from one frame to the next and don't use random values that change between frames.\n- Keep the length in one constant and express scene timings as fractions of it.\n- If you use a web font, wait for it to load before you measure text or draw the first frame.\n- Put controls under the video: play and pause, restart, a scrub bar, a time readout{{SOUND_CONTROLS}} and an Export MP4 button.\n- Shrink the preview to fit the chat window. Export at full size.",
+"{{NARRATION_BLOCK}}",
+"{{MUSIC_BLOCK}}",
+"{{EFFECTS_BLOCK}}",
+"{{SILENT_BLOCK}}",
+"EXPORTING THE VIDEO\nThe Export MP4 button should produce a real MP4{{WITH_SOUND}}. Try these in order:\n1. Render frame by frame at 30 frames per second with the browser's video encoder and an MP4 muxer library.{{OFFLINE_SOUND}}\n2. If that isn't available, record the canvas{{AND_SOUND}} in real time, as MP4 if the browser allows it.\n3. If neither gives a true MP4, record in the best format the browser supports, name the file with its real extension and tell me plainly. Never label another format as MP4.\nShow progress during export. When the file is ready, show a Download button. Artifacts can block files that a page tries to save by itself, so use the save method this environment supports and make sure the button hands me the file.",
+"{{PROCESS_BLOCK}}",
+"BEFORE YOU HAND IT OVER\nLook at one still frame from the middle of every scene. Fix anything that overlaps, runs off the frame or is too small to read. Check that the video plays from start to end, that scrubbing works and that export produces a file. Then tell me in two or three lines what you made and any limits I should know about. No long write-up."
+];
+const BLOCKS={
+ storyOn:"PLAN FIRST\nBefore you animate anything, show me the plan. Give me a short table with one row per scene: when it runs, what the viewer learns, what's on screen and how it moves into the next scene. Then build an artifact with one still frame per scene, drawn with the same code and style you'll use for the final video. Stop there and wait. I'll reply \"go\" or ask for changes.",
+ storyOff:"NO PLANNING STEP\nDon't show me a plan and don't ask me questions. Make the creative decisions yourself and build the finished video now.",
+ voiceOn:"VOICEOVER\nI have a voiceover MP3. Add a file picker so I can load it into the artifact. Once it's loaded, the recording's real length replaces the length in the brief, and the audio clock drives the animation. Don't trim it, speed it up or replace it with a synthetic voice. Time the scenes to the script below. If there's no script, ask me for it before you set the timings.\nScript: {{SCRIPT}}",
+ voiceOff:"NO NARRATION\nThere's no voiceover. The pictures and short labels have to carry the whole explanation.",
+ music:"MUSIC\nCompose a simple original backing track in the browser with the Web Audio API. Give it a chord progression, a soft pulse, a lift at the biggest reveal and a fade over the last two seconds. It should sound written, like a tune, and it must be your own. Keep it quieter than any voiceover or sound effects. Schedule the notes against the video clock so the music stays in step when I scrub or restart.",
+ effects:"SOUND EFFECTS\nAdd quiet synthesized sounds for the moments that matter: something arriving, two things connecting, a change of scene. Pick sounds that suit the topic. Trigger them from a list of timestamps and never from the drawing function, so scrubbing doesn't fire a pile of them at once and replaying doesn't stack copies.",
+ silent:"NO SOUND\nThis video is silent. Don't add music, effects or sound controls."
+};
+const DESTS=[
+ {id:'youtube',name:'YouTube',frame:'wide',secs:90,note:'a standard YouTube video'},
+ {id:'shorts',name:'Shorts, Reels, TikTok',frame:'tall',secs:45,note:"a vertical short for Shorts, Reels or TikTok. Hook the viewer in the first two seconds and keep text away from the top and bottom edges, where the app's own buttons sit"},
+ {id:'linkedin',name:'LinkedIn',frame:'wide',secs:60,note:'a LinkedIn feed post. Many people watch with the sound off, so the captions must carry the meaning'},
+ {id:'newsletter',name:'Newsletter or blog',frame:'wide',secs:30,note:'a short clip embedded in a newsletter or blog post'},
+ {id:'custom',name:'Custom',frame:null,secs:null,note:''}
+];
+const clampSecs=s=>Math.min(120,Math.max(15,Math.round(s)||15));
+const fmtLen=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function joinList(a){return a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];}
+function assemble(s){
+  const st=STYLES.find(x=>x.id===s.style)||STYLES[0],wide=s.frame!=='tall',secs=clampSecs(s.secs);
+  const sound=[];if(s.voice)sound.push('my own voiceover');if(s.music)sound.push('background music');if(s.effects)sound.push('sound effects');
+  const ctl=[];if(s.music)ctl.push('a Music on/off switch');if(s.effects)ctl.push('an Effects on/off switch');
+  const any=sound.length>0;
+  const aud=(s.audience||'').trim().replace(/\s+/g,' '),dest=DESTS.find(d=>d.id===s.dest);
+  const extra=(aud?'\nAudience: '+aud.replace(/[.\s]+$/,'')+'. Pitch the words, examples and pace at them.':'')+(dest&&dest.note?'\nMade for: '+dest.note+'.':'');
+  const v={
+    EXTRA:extra,
+    TOPIC:(s.topic||'').trim().replace(/\s+/g,' '),
+    LENGTH:s.voice?'set by my voiceover recording':secs+' seconds',
+    WIDTH:wide?1920:1080,HEIGHT:wide?1080:1920,SHAPE:wide?'wide, 16:9':'tall, 9:16',
+    STYLE_NAME:st.name,STYLE_BLOCK:st.block,
+    SOUND_SUMMARY:any?joinList(sound):'none, this is a silent video',
+    SOUND_CONTROLS:ctl.map(c=>', '+c).join(''),
+    NARRATION_BLOCK:s.voice?BLOCKS.voiceOn.replace('{{SCRIPT}}',(s.script||'').trim()||'(none yet, ask me for it)'):BLOCKS.voiceOff,
+    MUSIC_BLOCK:s.music?BLOCKS.music:'',EFFECTS_BLOCK:s.effects?BLOCKS.effects:'',SILENT_BLOCK:any?'':BLOCKS.silent,
+    WITH_SOUND:any?' with the sound mixed in':'',
+    OFFLINE_SOUND:any?' Render the sound offline and encode it into the same file.':'',
+    AND_SOUND:any?' and sound':'',
+    PROCESS_BLOCK:s.story?BLOCKS.storyOn:BLOCKS.storyOff
+  };
+  return CORE.map(p=>p.replace(/\{\{(\w+)\}\}/g,(m,k)=>k in v?String(v[k]):m)).filter(p=>p.trim()).join('\n\n');
+}
+/*LOGIC-END*/
+
+(function(){
+  const $=id=>document.getElementById(id);
+  const state={style:'paper',topic:STYLES[0].sample,audience:'',dest:'youtube',story:true,voice:false,script:'',secs:90,frame:'wide',music:true,effects:true};
+
+  /* style cards with a small live sample of each look */
+  const cards=$('cards'),ctxs={};
+  STYLES.forEach(st=>{
+    const b=document.createElement('button');b.type='button';b.className='card';b.id='style-'+st.id;
+    const c=document.createElement('canvas');c.width=320;c.height=180;ctxs[st.id]=c.getContext('2d');
+    const m=document.createElement('div');m.className='meta';
+    const n=document.createElement('b');n.textContent=st.name;const d=document.createElement('span');d.textContent=st.tag;
+    m.append(n,d);b.append(c,m);b.onclick=()=>{state.style=st.id;render();};cards.append(b);
+  });
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,cl=x=>Math.min(1,Math.max(0,x));
+  const back=x=>{const t=cl(x),c=1.6;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
+  function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+  function sample(id,g,t){
+    const u=(t%6)/6,W=320,H=180;g.setTransform(1,0,0,1,0,0);g.shadowColor='transparent';g.shadowBlur=0;g.shadowOffsetY=0;g.globalAlpha=1;
+    if(id==='paper'){
+      g.fillStyle='#F4EDE1';g.fillRect(0,0,W,H);
+      const sh=()=>{g.shadowColor='rgba(70,45,20,.3)';g.shadowBlur=6;g.shadowOffsetY=3;};
+      const a=ease(cl(u*4)),b=ease(cl(u*4-1)),c=ease(cl(u*4-2)),out=ease(cl(u*8-7));
+      g.save();g.translate(0,out*200);
+      sh();g.fillStyle='#2F7F86';rr(g,-200+a*240,50,150,90,10);g.fill();
+      sh();g.fillStyle='#E0A526';g.beginPath();g.arc(215,340-b*250,34,0,7);g.fill();
+      sh();g.fillStyle='#C8553D';rr(g,400-c*190,96,84,50,8);g.fill();
+      sh();g.fillStyle='#FFFCF5';rr(g,66,-60+a*132,96,26,6);g.fill();
+      g.restore();
+    }else if(id==='chalk'){
+      g.fillStyle='#1F2A28';g.fillRect(0,0,W,H);g.lineCap='round';g.lineJoin='round';
+      const p=cl(u*1.6),q=cl(u*2.4-1),wipe=cl(u*8-7);g.globalAlpha=1-wipe;
+      g.strokeStyle='#F4F1E8';g.lineWidth=3.5;g.beginPath();
+      for(let i=0;i<=60*p;i++){const x=40+i*4,y=130-Math.pow(i/60,2.2)*90+Math.sin(i*1.7)*1.2;i?g.lineTo(x,y):g.moveTo(x,y);}g.stroke();
+      g.strokeStyle='#8EC9E8';g.lineWidth=3;g.beginPath();g.moveTo(40,30);g.lineTo(40,140);g.lineTo(40+250*cl(u*3),140);g.stroke();
+      if(q>0){g.strokeStyle='#F2D469';g.lineWidth=3.5;g.beginPath();g.arc(262,52,16,-1.4,-1.4+6.6*q);g.stroke();}
+      g.globalAlpha=1;
+    }else if(id==='flat'){
+      const k=Math.floor((t%6)/2),v=((t%6)%2)/2,bg=['#14213D','#FF5A5F','#FFC914'],fg=['#FF5A5F','#FFC914','#14213D'];
+      g.fillStyle=bg[k];g.fillRect(0,0,W,H);
+      g.fillStyle='#FAF7F0';rr(g,30,104,ease(cl(v*2.5))*170,26,13);g.fill();rr(g,30,66,ease(cl(v*2.5-.4))*110,26,13);g.fill();
+      const grow=ease(cl(v*4-3));g.fillStyle=fg[k];g.beginPath();g.arc(250,90,30+ease(cl(v*2))*14+grow*330,0,7);g.fill();
+    }else if(id==='neon'){
+      g.fillStyle='#0B0B1A';g.fillRect(0,0,W,H);g.lineCap='round';
+      g.strokeStyle='rgba(138,92,255,.5)';g.lineWidth=1;g.beginPath();
+      for(let i=-8;i<=8;i++){g.moveTo(160,100);g.lineTo(160+i*60,180);}
+      for(let j=0;j<6;j++){const y=100+80*Math.pow((j+(t*.5%1))/6,2);g.moveTo(0,y);g.lineTo(W,y);}g.stroke();
+      g.globalAlpha=u<.08?Math.floor(t*30)%2:1;g.shadowBlur=12;g.lineWidth=3;
+      g.shadowColor=g.strokeStyle='#19E3FF';g.beginPath();g.arc(84,58,26,0,7);g.stroke();
+      const p=ease(cl(u*3-.3));g.shadowColor=g.strokeStyle='#FF2E88';g.beginPath();g.moveTo(110,58);g.lineTo(110+p*116,58);g.stroke();
+      if(p>=1){g.strokeRect(226,36,50,44);const d=(t*.8)%1;g.fillStyle=g.shadowColor='#FFFFFF';g.beginPath();g.arc(110+d*116,58,3.5,0,7);g.fill();}
+      g.globalAlpha=1;g.shadowBlur=0;
+    }else if(id==='glass'){
+      const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#1B1F4B');gr.addColorStop(.6,'#6C4CF1');gr.addColorStop(1,'#FFB199');g.fillStyle=gr;g.fillRect(0,0,W,H);
+      g.fillStyle='rgba(255,177,153,.6)';g.beginPath();g.arc(232+Math.sin(t*.7)*30,58+Math.cos(t*.5)*16,46,0,7);g.fill();
+      g.fillStyle='rgba(25,227,255,.35)';g.beginPath();g.arc(88+Math.cos(t*.6)*24,132,38,0,7);g.fill();
+      const panel=(x,y,w,h)=>{g.shadowColor='rgba(10,10,40,.35)';g.shadowBlur=14;g.shadowOffsetY=6;g.fillStyle='rgba(255,255,255,.22)';rr(g,x,y,w,h,12);g.fill();
+        g.shadowColor='transparent';g.shadowBlur=0;g.shadowOffsetY=0;g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=1.2;g.stroke();};
+      const a=ease(cl(u*3)),b=ease(cl(u*3-.6)),x1=38-(1-a)*230,y1=34+Math.sin(t)*3,x2=156+(1-b)*230,y2=74+Math.cos(t)*3;
+      panel(x1,y1,150,92);g.fillStyle='rgba(255,255,255,.9)';rr(g,x1+16,y1+18,84,7,3);g.fill();rr(g,x1+16,y1+36,56,7,3);g.fill();
+      panel(x2,y2,128,78);g.strokeStyle='#FFFFFF';g.lineWidth=2;g.beginPath();g.arc(x2+34,y2+39,16,0,7);g.stroke();
+    }else if(id==='ink'){
+      g.fillStyle='#F3ECDD';g.fillRect(0,0,W,H);g.lineCap='round';
+      const p=cl(u*1.8);g.globalAlpha=1-cl(u*8-7);g.strokeStyle='#1A1A1A';
+      const pt=a=>[36+a*230,122-Math.sin(a*3.1)*64];
+      for(let i=0;i<50*p;i++){const a=i/50,[x,y]=pt(a),[x2,y2]=pt((i+1)/50);g.lineWidth=2+11*Math.sin(a*3.14)*(1-a*.5);g.beginPath();g.moveTo(x,y);g.lineTo(x2,y2);g.stroke();}
+      const s=ease(cl(u*3-1.9));if(s>0){g.fillStyle='#C3272B';g.beginPath();g.arc(264,120,15*s,0,7);g.fill();}
+      g.globalAlpha=1;
+    }else if(id==='comic'){
+      g.fillStyle='#FFD60A';g.fillRect(0,0,W,H);g.fillStyle='rgba(230,57,70,.35)';
+      for(let y=8;y<H;y+=14)for(let x=8+((y-8)/14%2)*7;x<W;x+=14){g.beginPath();g.arc(x,y,1.5+3*(x/W),0,7);g.fill();}
+      const s=back(u*4),b=back(u*4-1.2);
+      if(s>0){g.save();g.translate(108,92);g.rotate(Math.sin(t*2)*.05);g.scale(s,s);g.beginPath();
+        for(let i=0;i<20;i++){const r=i%2?34:56,a=i/20*6.283;g.lineTo(Math.cos(a)*r,Math.sin(a)*r);}g.closePath();
+        g.fillStyle='#E63946';g.fill();g.lineWidth=5;g.strokeStyle='#000000';g.lineJoin='round';g.stroke();
+        g.fillStyle='#FFFFFF';g.font='italic 900 22px "Arial Black",Arial,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('ZAP!',0,2);g.restore();}
+      if(b>0){g.save();g.translate(234,70);g.scale(b,b);g.fillStyle='#000000';rr(g,-50,-23,110,56,16);g.fill();g.fillStyle='#FFFFFF';rr(g,-55,-28,110,56,16);g.fill();
+        g.lineWidth=4;g.strokeStyle='#000000';g.stroke();g.fillStyle='#1D4ED8';g.fillRect(-38,-12,76,7);g.fillRect(-38,4,50,7);g.restore();}
+    }else if(id==='term'){
+      g.fillStyle='#07110B';g.fillRect(0,0,W,H);g.font='500 14px "IBM Plex Mono",ui-monospace,monospace';g.textAlign='left';g.textBaseline='top';
+      const lines=['> explain --topic api','+--------+    +--------+','|  APP   | -> | SERVER |','+--------+    +--------+','[########----] example'];
+      const n=Math.floor(cl(u*1.5)*lines.join('').length);let c=0;g.shadowBlur=4;
+      lines.forEach((ln,i)=>{const show=Math.max(0,Math.min(ln.length,n-c));c+=ln.length;g.fillStyle=g.shadowColor=i===4?'#FFB000':'#39FF7A';
+        const cur=(show>0&&show<ln.length)||(i===4&&show===ln.length&&Math.floor(t*2)%2);g.fillText(ln.slice(0,show)+(cur?'█':''),22,24+i*26);});
+      g.shadowBlur=0;g.fillStyle='rgba(0,0,0,.25)';for(let y=0;y<H;y+=4)g.fillRect(0,y,W,1);
+    }else if(id==='clay'){
+      g.fillStyle='#F6F1EA';g.fillRect(0,0,W,H);
+      const tt=Math.floor(t*12)/12,ph=(tt%1.2)/1.2,yb=Math.abs(Math.sin(ph*Math.PI)),sq=1-.22*Math.pow(1-yb,6);
+      const blob=(x,y,rx,ry,c1,c2)=>{g.fillStyle='rgba(91,75,110,.18)';g.beginPath();g.ellipse(x,152,rx,7,0,0,7);g.fill();
+        const gr=g.createRadialGradient(x-rx*.35,y-ry*.4,2,x,y,rx*1.2);gr.addColorStop(0,c1);gr.addColorStop(1,c2);g.fillStyle=gr;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill();};
+      blob(96,152-34*sq-yb*62,34/sq,34*sq,'#FFB3A6','#F0705E');blob(204,120,40,32,'#A8ECD0','#5CC49C');blob(264,134,22,18,'#FFE9A8','#F2C24A');
+    }
+  }
+  const still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function loop(now){for(const st of STYLES)sample(st.id,ctxs[st.id],still?2.6:now/1000);if(!still)requestAnimationFrame(loop);}
+  requestAnimationFrame(loop);
+
+  /* destinations set frame and length together */
+  DESTS.forEach(d=>{const b=document.createElement('button');b.type='button';b.className='dest';b.id='dest-'+d.id;
+    const n=document.createElement('b');n.textContent=d.name;const m=document.createElement('span');
+    m.textContent=d.secs?(d.frame==='wide'?'Wide':'Tall')+', '+fmtLen(d.secs):'Your own settings';
+    b.append(n,m);b.onclick=()=>{state.dest=d.id;if(d.secs){state.secs=d.secs;state.frame=d.frame;}render();};$('dests').append(b);});
+  $('len').oninput=e=>{state.secs=clampSecs(+e.target.value);render();};
+  $('wide').onclick=()=>{state.frame='wide';render();};
+  $('tall').onclick=()=>{state.frame='tall';render();};
+
+  $('topic').value=state.topic;
+  $('topic').oninput=e=>{state.topic=e.target.value;render();};
+  $('audience').oninput=e=>{state.audience=e.target.value;render();};
+  $('sample').onclick=()=>{state.topic=STYLES.find(x=>x.id===state.style).sample;$('topic').value=state.topic;render();};
+  $('planYes').onclick=()=>{state.story=true;render();};
+  $('planNo').onclick=()=>{state.story=false;render();};
+  $('voiceNo').onclick=()=>{state.voice=false;render();};
+  $('voiceYes').onclick=()=>{state.voice=true;render();};
+  $('script').oninput=e=>{state.script=e.target.value;render();};
+  $('music').onchange=e=>{state.music=e.target.checked;render();};
+  $('effects').onchange=e=>{state.effects=e.target.checked;render();};
+  $('form').onsubmit=e=>e.preventDefault();
+
+  let text='';
+  const press=(id,on)=>$(id).setAttribute('aria-pressed',String(on));
+  function render(){
+    STYLES.forEach(st=>press('style-'+st.id,st.id===state.style));
+    DESTS.forEach(d=>press('dest-'+d.id,d.id===state.dest));
+    press('wide',state.frame==='wide');press('tall',state.frame==='tall');
+    press('planYes',state.story);press('planNo',!state.story);press('voiceNo',!state.voice);press('voiceYes',state.voice);
+    $('frameSeg').hidden=state.dest!=='custom';
+    $('len').value=state.secs;$('len').disabled=state.voice;$('lenout').textContent=state.voice?'from voiceover':fmtLen(state.secs);
+    $('lenhint').textContent=state.voice?'Your voiceover recording sets the length.':(state.frame==='wide'?'Wide frame, 1920 x 1080.':'Tall frame, 1080 x 1920.')+' Drag to change the length, from 0:15 to 2:00.';
+    $('planhint').textContent=state.story?'Claude shows a scene plan and still frames, then waits for your go.':'Claude makes the creative calls and builds the finished video in one go.';
+    $('script').hidden=!state.voice;
+    $('count').textContent=state.topic.length+' / 500';
+    const has=state.topic.trim().length>0;
+    text=assemble(state);
+    $('preview').textContent=has?text:'Type a topic and your prompt appears here.';
+    const c=$('copy');c.disabled=!has;c.classList.remove('done');c.textContent='Copy prompt';
+    $('msg').textContent=has?text.split(/\s+/).length+' words. Read it over or edit it after pasting.':'Add a topic to switch on the Copy button.';
+  }
+  function copied(){const c=$('copy');c.classList.add('done');c.textContent='Copied';$('msg').textContent='Copied. Paste it into a new Claude chat.';}
+  function fallback(){
+    try{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.append(ta);ta.select();
+      const ok=document.execCommand('copy');ta.remove();if(ok){copied();return;}}catch(e){}
+    const r=document.createRange();r.selectNodeContents($('preview'));const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+    $('msg').textContent='Your browser blocked the copy. The prompt is selected below, so press Ctrl+C or Cmd+C.';
+  }
+  $('copy').onclick=()=>{
+    if(!state.topic.trim())return;
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(copied).catch(fallback);else fallback();
+  };
+  render();
+})();
+</script>
+</body>
+</html>
